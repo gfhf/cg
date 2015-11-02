@@ -29,6 +29,12 @@ public class HalfEdge {
    */
   private TriangleFacet facet;
 
+  public HalfEdge(){}
+
+  public HalfEdge(Vertex vertex) {
+      startVertex = vertex;
+  }
+  
   public HalfEdge getNext() {
     return next;
   }

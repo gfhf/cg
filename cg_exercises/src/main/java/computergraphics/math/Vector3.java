@@ -18,6 +18,19 @@ public class Vector3 {
    */
   private final double[] values = { 0, 0, 0 };
 
+  public double getX() {
+      return values[0];
+  }
+
+  public double getY() {
+      return values[1];
+  }
+
+  public double getZ() {
+      return values[2];
+  }
+  
+  
   /**
    * Constructor
    */

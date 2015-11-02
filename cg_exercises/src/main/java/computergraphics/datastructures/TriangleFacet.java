@@ -3,7 +3,7 @@ package computergraphics.datastructures;
 import computergraphics.math.Vector3;
 
 /**
- * A facet has a reference to one of oits half edges. This datastructure
+ * A facet has a reference to one of its half edges. This datastructure
  * represents a general mesh (triangle, quad, ...). However, we only use
  * triangle meshes here.
  * 

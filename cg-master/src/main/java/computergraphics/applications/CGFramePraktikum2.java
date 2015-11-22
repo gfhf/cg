@@ -49,18 +49,23 @@ public class CGFramePraktikum2 extends AbstractCGFrame {
      * Sets up the scene graph.
      */
     private void setupSceneGraph() {
-        // TRIANGLE
+    	ObjIO io = new ObjIO();
+    	HalfEdgeTriangleMesh mesh = new HalfEdgeTriangleMesh();
+    	io.einlesen(".\\obj\\cow.obj", mesh);
+        mesh.computeTriangleNormals();
+        mesh.computeVertexNormals();
+    	// TRIANGLE
         // Shader node does the lighting computation
         ShaderNode shaderNodeTriangle = new ShaderNode(ShaderType.PHONG);
         getRoot().addChild(shaderNodeTriangle);
         shaderNodeTriangle.setParent(getRoot());
 
-        ColorNode colorNodeTriangle = new ColorNode(new Vector3(0.5, 0.2, 0.1));
+        ColorNode colorNodeTriangle = new ColorNode(new Vector3(0.0, 1.0, 0.0));
         shaderNodeTriangle.addChild(colorNodeTriangle);
         colorNodeTriangle.setParent(shaderNodeTriangle);
         nodeRegistry.put("colorNodeTriangle", colorNodeTriangle);
 
-        HalfEdgeTriangleMesh mesh = new HalfEdgeTriangleMesh();
+        
 //        mesh.addVertex(new Vertex(new Vector3(-0.5f, -0.5f, 0)));
 //        mesh.addVertex(new Vertex(new Vector3(0.5f, -0.5f, 0)));
 //        mesh.addVertex(new Vertex(new Vector3(0, 0.5f, 0)));
@@ -73,9 +78,9 @@ public class CGFramePraktikum2 extends AbstractCGFrame {
 //        mesh.addTriangle(2, 3, 4);
 //        mesh.addTriangle(0, 2, 4);
 
-        ObjIO io = new ObjIO();
         
-        io.einlesen("cow.obj", mesh);
+        
+        
         
         TriangulatedMeshNode triMeshNode = new TriangulatedMeshNode(mesh);
         colorNodeTriangle.addChild(triMeshNode);

@@ -72,6 +72,10 @@ public class HalfEdgeTriangleMesh implements ITriangleMesh {
     	h23.setFacet(triangle);
     	h31.setFacet(triangle);
     	
+    	v1.setHalfEgde(h12);
+    	v2.setHalfEgde(h23);
+    	v3.setHalfEgde(h31);
+    	
     	for(HalfEdge h : newEdges){
     		Vertex startVertex = h.getStartVertex();
     		Vertex endVertex = h.getNextHalfEdge().getStartVertex();
@@ -93,6 +97,8 @@ public class HalfEdgeTriangleMesh implements ITriangleMesh {
     	
     	facetList.add(triangle);
     }
+    
+    
 
     private void createThirdEdge(ArrayList<Vertex> vertexesForNewTriangle, TriangleFacet newFacet, ArrayList<HalfEdge> edgesForNewTriangle) {
         ArrayList<Vertex> vertexesWithOutboundEdges = new ArrayList<>();
@@ -311,7 +317,29 @@ public void computeTriangleNormals(){
         Vector3 normal=vertex1.subtract(vertex0).cross(vertex2.subtract(vertex0)).getNormalized();
         facet.setNormal(normal);
         }
-        }
+    }
+
+public void computeVertexNormals(){
+	for(Vertex vertex : vertexList)
+	{
+		ArrayList<TriangleFacet> connectedTriangles = new ArrayList<TriangleFacet>();
+		Vector3 normal = new Vector3(0,0,0);
+		for(HalfEdge edge : halfEdgeList){
+			if(edge.getStartVertex().equals(vertex) && !connectedTriangles.contains(edge.getFacet())){
+				connectedTriangles.add(edge.getFacet());
+			}
+		}
+		for(TriangleFacet triangle : connectedTriangles){
+			normal = normal.add(triangle.getNormal());
+		}
+		normal.normalize();
+		vertex.setNormal(normal);
+	}
+	
+	
+}
+
+
 
 @Override
 public void setTextureFilename(String filename){

@@ -11,6 +11,7 @@ package computergraphics.scenegraph;
 
 import com.jogamp.opengl.GL2;
 import computergraphics.datastructures.*;
+import computergraphics.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,77 +20,64 @@ import java.util.List;
  * Scene graph node which realizes drawing of a triangulated mesh.
  */
 public class TriangulatedMeshNode extends Node {
-    /**
-     * The mesh to be realized.
-     */
-    private ITriangleMesh triangulatedMesh;
-    private int displayListName;
+	private HalfEdgeTriangleMesh mesh;
+	private int displayList = -1;
 
+	public TriangulatedMeshNode(HalfEdgeTriangleMesh mesh) {
+		this.mesh = mesh;
+	}
 
-    /**
-     * Setter.
-     *
-     * @param triangulatedMesh
-     */
-    public void setTriangulatedMesh(HalfEdgeTriangleMesh triangulatedMesh) {
-        this.triangulatedMesh = triangulatedMesh;
-        displayListName = 0;
+	@Override
+	public void drawGl(GL2 gl) {
+		
+		if (this.displayList == -1) {
+			generateDisplaylist(gl);
+		}
 
-    }
+		
 
-    /**
-     * Constructor.
-     */
-    public TriangulatedMeshNode(HalfEdgeTriangleMesh mesh) {
-        triangulatedMesh = mesh;
-    }
+		gl.glCallList(displayList);
+	}
 
-    @Override
-    public void drawGl(GL2 gl) {
-        if (displayListName == 0) {
-            buildList(gl);
-        } else {
-            gl.glCallList(displayListName);
-        }
-//        gl.glBegin(GL2.GL_TRIANGLES);
-//
-//        List<TriangleFacet> triangles = triangulatedMesh.getAllTriangles();
-//
-//        for (TriangleFacet triangle : triangles) {
-//            HalfEdge halfEdgeOfTriangle = triangle.getHalfEdge();
-//            ArrayList<Vertex> vertexes = new ArrayList<>();
-//            vertexes.add(halfEdgeOfTriangle.getStartVertex());
-//            vertexes.add(halfEdgeOfTriangle.getNextHalfEdge().getStartVertex());
-//            vertexes.add(halfEdgeOfTriangle.getNextHalfEdge().getNextHalfEdge().getStartVertex());
-//            for (Vertex vertex : vertexes) {
-//                gl.glVertex3d(vertex.getPosition().getX(), vertex.getPosition().getY(), vertex.getPosition().getZ());
-//            }
-//        }
-//        // Restore original state
-//        gl.glEnd();
-    }
+	public void generateDisplaylist(GL2 gl) {
+		displayList = gl.glGenLists(1);
+		gl.glNewList(displayList, GL2.GL_COMPILE); // TODO Possible bug GL2? or
+													// GL
+		gl.glBegin(GL2.GL_TRIANGLES);
 
-    public void buildList(GL2 gl) {
-        for (int i = 1; displayListName != 0; i++) {
-            displayListName = gl.glGenLists(i);
-        }
-        gl.glNewList(displayListName, GL2.GL_TRIANGLES);
-        gl.glBegin(GL2.GL_TRIANGLES);
+		for (int faceIndex = 0; faceIndex < mesh.getNumberOfTriangles(); faceIndex++) {
+			TriangleFacet f1 = mesh.getFacet(faceIndex);
+			Vector3 normalFace = f1.getNormal();
+			Vector3 color = f1.getHalfEdge().getStartVertex().getColor();
 
-        List<TriangleFacet> triangles = triangulatedMesh.getAllTriangles();
+			gl.glNormal3d(normalFace.get(0), normalFace.get(1), normalFace.get(2));
+			gl.glColor3d(color.get(0), color.get(1), color.get(2));
 
-        for (TriangleFacet triangle : triangles) {
-            HalfEdge halfEdgeOfTriangle = triangle.getHalfEdge();
-            ArrayList<Vertex> vertexes = new ArrayList<>();
-            vertexes.add(halfEdgeOfTriangle.getStartVertex());
-            vertexes.add(halfEdgeOfTriangle.getNextHalfEdge().getStartVertex());
-            vertexes.add(halfEdgeOfTriangle.getNextHalfEdge().getNextHalfEdge().getStartVertex());
-            for (Vertex vertex : vertexes) {
-                gl.glVertex3d(vertex.getPosition().getX(), vertex.getPosition().getY(), vertex.getPosition().getZ());
-            }
-        }
-        // Restore original state
-        gl.glEnd();
-        gl.glEndList();
-    }
+			
+			Vertex vx1 = f1.getHalfEdge().getStartVertex();
+			Vector3 v1 = vx1.getPosition();
+			
+			Vertex vx2 = f1.getHalfEdge().getNextHalfEdge().getStartVertex();
+			Vector3 v2 = vx2.getPosition();
+			
+			Vertex vx3 = f1.getHalfEdge().getNextHalfEdge().getNextHalfEdge().getStartVertex();
+			Vector3 v3 = vx3.getPosition();
+			
+			gl.glNormal3d(vx1.getNormal().get(0),vx1.getNormal().get(1),vx1.getNormal().get(2));
+			gl.glVertex3d(v1.get(0), v1.get(1), v1.get(2));
+			
+			gl.glNormal3d(vx2.getNormal().get(0),vx2.getNormal().get(1),vx2.getNormal().get(2));
+			gl.glVertex3d(v2.get(0), v2.get(1), v2.get(2));
+			
+			gl.glNormal3d(vx3.getNormal().get(0),vx3.getNormal().get(1),vx3.getNormal().get(2));
+			gl.glVertex3d(v3.get(0), v3.get(1), v3.get(2));
+
+		}
+
+		gl.glEnd();
+
+		gl.glEndList();
+
+	}
+
 }

@@ -6,6 +6,9 @@
  */
 package computergraphics.datastructures;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import computergraphics.math.Vector3;
 
 /**
@@ -18,7 +21,11 @@ public class Vertex {
   /**
    * 3D position of the vertex.
    */
-  private final Vector3 position = new Vector3(0, 0, 0);
+  private Vector3 position = new Vector3(0, 0, 0);
+  
+  public void setPosition(Vector3 newPosition){
+	  position = newPosition;
+  }
 
   /**
    * (Normalized) normal direction of the vertex.
@@ -121,4 +128,5 @@ public class Vertex {
     result = 31 * result + (halfEgde != null ? halfEgde.hashCode() : 0);
     return result;
   }
+  
 }

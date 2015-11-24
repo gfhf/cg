@@ -339,7 +339,114 @@ public void computeVertexNormals(){
 	
 }
 
+public void laplace(){
+	double a = 0.5;
+	
+	HashMap<Vertex, Vector3> centerList = new HashMap();
+	for(Vertex v : vertexList){
+		ArrayList<Vertex> neighbours = new ArrayList();
+		Vector3 sum = new Vector3(0,0,0);
+		for(HalfEdge e  : halfEdgeList){
+			Vertex startVertex = e.getStartVertex();
+			Vertex endVertex = e.getNextHalfEdge().getStartVertex();
+			if(startVertex.equals(v) && !neighbours.contains(endVertex)){
+				neighbours.add(endVertex);
+			}
+			if(endVertex.equals(v) && !neighbours.contains(startVertex)){
+				neighbours.add(startVertex);
+			}
+		}
+		for(Vertex neighbour : neighbours){
+			sum = sum.add(neighbour.getPosition());
+		}
+//		double xSquared = sum.getX()*sum.getX();
+//		double ySquared = sum.getY()*sum.getY();
+//		double zSquared = sum.getZ()*sum.getZ();
+//		double center = 1 / (Math.sqrt((xSquared+ySquared+zSquared)));
+//		centerList.put(v, center);
+		centerList.put(v, sum);
+	}
+	for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
+//		Vector3 newPostion = new Vector3()entry.getKey().getPosition()*a+(1-a)*entry.getValue();
+//		entry.getKey().setPosition(newPosition);
+		Vector3 ap = entry.getKey().getPosition().multiply(a);
+		Vector3 ac = entry.getValue().multiply(1-a);
+		Vector3 newPosition = new Vector3(ap.add(ac));
+		entry.getKey().setPosition(newPosition);
+	}
+	for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
+		vertexList = new ArrayList();
+		vertexList.add(entry.getKey());
+	}
+	computeTriangleNormals();
+	computeVertexNormals();
+}
 
+public void calculateCurveColor(){
+	HashMap<Vertex, Double> kList = new HashMap();
+	double kmin = Integer.MAX_VALUE;
+	double kmax = Integer.MIN_VALUE;
+	
+	for(Vertex v : vertexList){
+		ArrayList<Vertex> neighbours = new ArrayList();
+		Vector3 sum = new Vector3(0,0,0);
+		for(HalfEdge e  : halfEdgeList){
+			Vertex startVertex = e.getStartVertex();
+			Vertex endVertex = e.getNextHalfEdge().getStartVertex();
+			if(startVertex.equals(v) && !neighbours.contains(endVertex)){
+				neighbours.add(endVertex);
+			}
+			if(endVertex.equals(v) && !neighbours.contains(startVertex)){
+				neighbours.add(startVertex);
+			}
+		}
+		for(Vertex neighbour : neighbours){
+			sum = sum.add(neighbour.getPosition());
+		}
+		double piXpj = v.getPosition().multiply(sum);
+		double xSquared = sum.getX()*sum.getX();
+		double ySquared = sum.getY()*sum.getY();
+		double zSquared = sum.getZ()*sum.getZ();
+		double piXpj2 = (Math.sqrt((xSquared+ySquared+zSquared)));
+		double arccos = Math.acos(piXpj/piXpj2);
+
+		HalfEdge startEdge = v.getHalfEdge();
+		HalfEdge currentEdge = startEdge;
+		
+		List<TriangleFacet> facetsOfV = new ArrayList();
+		do{
+			facetsOfV.add(currentEdge.getFacet());
+			currentEdge = currentEdge.getOpposite().getNextHalfEdge();
+		}while(startEdge != currentEdge);
+		
+		double A = 0;
+		for(TriangleFacet triangle : facetsOfV){
+			A += triangle.getArea();
+		}
+		
+		double kruemmung = arccos/A;
+		kList.put(v, kruemmung);
+		if(kruemmung < kmin){
+			kmin = kruemmung;
+		}
+		if(kruemmung > kmax){
+			kmax = kruemmung;
+		}
+	}
+	for(Map.Entry<Vertex, Double> entry : kList.entrySet()){
+		double f = ((entry.getValue()-kmin) / (kmax-kmin));
+		Vector3 ColorVector = new Vector3(0,1,0).multiply(f);
+		entry.getKey().setColor(ColorVector);
+	}
+}
+
+public List<HalfEdge> getHalfEdgeList(){
+	return halfEdgeList;
+}
+
+public List<Vertex> getVertexList(){
+	return vertexList;
+}
 
 @Override
 public void setTextureFilename(String filename){

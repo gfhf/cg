@@ -113,7 +113,7 @@ public class KruemmungsNode extends Node {
 			List<TriangleFacet> facetsOfV = new ArrayList();
 			do{
 				facetsOfV.add(currentEdge.getFacet());
-				currentEdge = currentEdge.getOpposite().getNextHalfEdge();
+				currentEdge = currentEdge.getOppositeHalfEdge().getNextHalfEdge();
 			}while(startEdge != currentEdge);
 			
 			double A = 0;

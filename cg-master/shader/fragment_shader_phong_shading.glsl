@@ -25,12 +25,14 @@ void main (void)
     // Phong lighting model
     vec4 ambient = ambientColor * rAmbient;
     vec4 diffuse = vec4(0,0,0,0);
+    vec4 spec = vec4(0,0,0,0);
     if ( dot(N,L) > 0.0 ){
     	diffuse = clamp( color * dot(N,L), 0.0, 1.0 );
     }
-    vec4 spec = vec4(0,0,0,0);
-    if ( dot(R,E) > 0.0 ){
-    	spec = clamp ( specularColor * pow(dot(R,E), exponentSpecular) , 0.0, 1.0 );
-    }
+
+     if ( dot(R,E) > 0.0 ){
+                	spec = clamp ( specularColor * pow(dot(R,E), exponentSpecular) , 0.0, 1.0 );
+                }
+
     gl_FragColor = ambient + diffuse + spec;
 }

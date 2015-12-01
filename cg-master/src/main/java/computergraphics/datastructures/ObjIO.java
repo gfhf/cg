@@ -40,7 +40,7 @@ public class ObjIO {
    * Lesen eines Dreiecksnetzes aus einer OBJ-Datei. Die Information wird in das
    * Dreiecksnetz 'mesh' geschrieben.
    */
-  public void einlesen(final String filename, ITriangleMesh mesh) {
+  public void einlesen(final String filename, ITriangleMesh mesh) throws IOException {
 
     System.out.println("Einlesen der OBJ-Datei " + filename);
 
@@ -62,7 +62,8 @@ public class ObjIO {
       }
       in.close();
     } catch (Exception e) {
-      System.out.println("Fehler beim Lesen aus der OBJ-Datei.");
+      System.out.println("Fehler beim Lesen aus der OBJ-Datei. " + e);
+      throw e;
     }
 
     System.out.println("OBJ-Datei " + filename + " mit " + mesh.getNumberOfVertices() + " Vertices und "

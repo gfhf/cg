@@ -15,6 +15,7 @@ import computergraphics.math.Vector3;
 import computergraphics.scenegraph.*;
 import computergraphics.scenegraph.ShaderNode.ShaderType;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -43,7 +44,11 @@ public class CGFramePraktikum3 extends AbstractCGFrame {
     public CGFramePraktikum3(int timerInverval) {
         super(timerInverval);
 
+
+
+
         setupSceneGraph();
+
     }
 
     /**
@@ -52,41 +57,27 @@ public class CGFramePraktikum3 extends AbstractCGFrame {
     private void setupSceneGraph() {
     	ObjIO io = new ObjIO();
     	mesh = new HalfEdgeTriangleMesh();
-    	io.einlesen(".\\obj\\cow.obj", mesh);
+        try {
+            String workingDir = System.getProperty("user.dir");
+            System.out.println("Current working directory : " + workingDir);
+            String meshesDirectory = workingDir  + "\\src\\main\\java\\computergraphics\\meshes\\cow.obj";
+            System.out.println("Meshes directory : " + meshesDirectory);
+            io.einlesen(meshesDirectory, mesh);
+        } catch (IOException e) {
+          return;
+        }
         mesh.computeTriangleNormals();
         mesh.computeVertexNormals();
         mesh.calculateCurveColor();
+
     	// TRIANGLE
         // Shader node does the lighting computation
-        ShaderNode shaderNodeTriangle = new ShaderNode(ShaderType.PHONG);
-        getRoot().addChild(shaderNodeTriangle);
-        shaderNodeTriangle.setParent(getRoot());
-
-        ColorNode colorNodeTriangle = new ColorNode(new Vector3(0.0, 1.0, 0.0));
-        //shaderNodeTriangle.addChild(colorNodeTriangle);
-        //colorNodeTriangle.setParent(shaderNodeTriangle);
-        nodeRegistry.put("colorNodeTriangle", colorNodeTriangle);
-
-        
-//        mesh.addVertex(new Vertex(new Vector3(-0.5f, -0.5f, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(0.5f, -0.5f, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(0, 0.5f, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(2, 2, 2f)));
-//        mesh.addVertex(new Vertex(new Vector3(2f, 0, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(0, 2f, 4f)));
-//
-//
-//        mesh.addTriangle(0, 1, 2);
-//        mesh.addTriangle(2, 3, 4);
-//        mesh.addTriangle(0, 2, 4);
-
-        
-        
-        
-        
+        ShaderNode shaderNode = new ShaderNode(ShaderType.PHONG);
+        ColorNode colorNode = new ColorNode(new Vector3(0.0, 1.0, 0.0));
+        getRoot().addChild(shaderNode);
+        shaderNode.addChild(colorNode);
         TriangulatedMeshNode triMeshNode = new TriangulatedMeshNode(mesh);
-        shaderNodeTriangle.addChild(triMeshNode);
-        triMeshNode.setParent(shaderNodeTriangle);
+        colorNode.addChild(triMeshNode);
     }
 
     /*
@@ -123,8 +114,7 @@ public class CGFramePraktikum3 extends AbstractCGFrame {
 			 System.out.println("Key pressed: " + (char) keyCode);
 			if (keyCode == (int) 'S') {
 				// System.out.println("Pressed key: " + keyCode);
-				getRoot().getChildNode(0).removeChild(0);//(new LaplaceNode(mesh));
-				getRoot().getChildNode(0).addChild(new LaplaceNode(mesh));
+                ((TriangulatedMeshNode) getRoot().getChildNode(0).getChildNode(0).getChildNode(0)).laplace();
 			}
 
 			

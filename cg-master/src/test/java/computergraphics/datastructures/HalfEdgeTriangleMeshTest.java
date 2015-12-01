@@ -185,6 +185,10 @@ public class HalfEdgeTriangleMeshTest {
         edges[1] = facetHalfEdge.getNextHalfEdge();
         edges[2] = edges[1].getNextHalfEdge();
 
+        assertThat(edges[0], notNullValue());
+        assertThat(edges[2], notNullValue());
+        assertThat(edges[3], notNullValue());
+
         // no edges equal
         assertThat(edges[0], not(equalTo(edges[1])));
         assertThat(edges[0], not(equalTo(edges[2])));
@@ -201,9 +205,9 @@ public class HalfEdgeTriangleMeshTest {
         assertThat(edges[1].getStartVertex(), notNullValue());
 
         // edges do not have same start vertex
-//        assertNotEquals(edges[0].getStartVertex(), edges[1].getStartVertex());
-//        assertNotEquals(edges[1].getStartVertex(), edges[2].getStartVertex());
-//        assertNotEquals(edges[2].getStartVertex(), edges[0].getStartVertex());
+//      assertNotEquals(edges[0].getStartVertex(), edges[1].getStartVertex());
+//      assertNotEquals(edges[1].getStartVertex(), edges[2].getStartVertex());
+//      assertNotEquals(edges[2].getStartVertex(), edges[0].getStartVertex());
 
         // edges have same facet
         assertThat(edges[0].getFacet(), equalTo(edges[1].getFacet()));
@@ -220,5 +224,37 @@ public class HalfEdgeTriangleMeshTest {
 //        assertThat(vertexes[0], not(equalTo(vertexes[1])));
 //        assertThat(vertexes[1], not(equalTo(vertexes[2])));
 //        assertThat(vertexes[2], not(equalTo(vertexes[0])));
+    }
+
+    /**
+     * Adding a triangle that is in between three other triangles.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAddTriangleInBetweenThreeExistingTriangles() throws Exception {
+        // Arrange
+        meshUnderTest.addVertex(new Vertex(new Vector3(1, 1, 0)));
+        meshUnderTest.addVertex(new Vertex(new Vector3(0.5, 0.5, 0)));
+        meshUnderTest.addVertex(new Vertex(new Vector3(0, 0, 0)));
+        meshUnderTest.addVertex(new Vertex(new Vector3(0, 1, 0)));
+        meshUnderTest.addVertex(new Vertex(new Vector3(0, 2, 0)));
+        meshUnderTest.addVertex(new Vertex(new Vector3(1.5, 0.5, 0)));
+
+        // Act
+        meshUnderTest.addTriangle(0, 1, 5);
+        meshUnderTest.addTriangle(1, 2, 3);
+        meshUnderTest.addTriangle(3, 4, 5);
+        meshUnderTest.addTriangle(1, 3, 5);
+
+
+        // Assert
+        assertThat(meshUnderTest.getNumberOfTriangles(), is(4));
+        assertThat(meshUnderTest.getNumberOfHalfEdges(), is(12));
+
+        checkFacetConcistency(meshUnderTest.getFacet(0));
+        checkFacetConcistency(meshUnderTest.getFacet(1));
+        checkFacetConcistency(meshUnderTest.getFacet(2));
+        checkFacetConcistency(meshUnderTest.getFacet(3));
     }
 }

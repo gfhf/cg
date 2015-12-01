@@ -9,7 +9,6 @@ import com.jogamp.opengl.GL2;
 
 import computergraphics.datastructures.HalfEdge;
 import computergraphics.datastructures.HalfEdgeTriangleMesh;
-import computergraphics.datastructures.ITriangleMesh;
 import computergraphics.datastructures.TriangleFacet;
 import computergraphics.datastructures.Vertex;
 import computergraphics.math.Vector3;
@@ -56,49 +55,55 @@ public class LaplaceNode extends Node
 		}
 	  
 	  public void laplace(){
-		  double a = 0.5;
-			
+		  double alpha = 0.5;
+
+		   //
 			HashMap<Vertex, Vector3> centerList = new HashMap();
 			for(Vertex v : vertexList){
-				ArrayList<Vertex> neighbours = new ArrayList();
+				ArrayList<Vertex> neighboursVertexes;
 				Vector3 sum = new Vector3(0,0,0);
-				for(HalfEdge e  : halfEdgeList){
-					Vertex startVertex = e.getStartVertex();
-					Vertex endVertex = e.getNextHalfEdge().getStartVertex();
-					if(startVertex.equals(v) && !neighbours.contains(endVertex)){
-						neighbours.add(endVertex);
-					}
-					if(endVertex.equals(v) && !neighbours.contains(startVertex)){
-						neighbours.add(startVertex);
-					}
-				}
-				for(Vertex neighbour : neighbours){
+
+				neighboursVertexes = GetNeighboursVertexes(v);
+				for(Vertex neighbour : neighboursVertexes){
 					sum = sum.add(neighbour.getPosition());
 				}
-//				double xSquared = sum.getX()*sum.getX();
-//				double ySquared = sum.getY()*sum.getY();
-//				double zSquared = sum.getZ()*sum.getZ();
-//				double center = 1 / (Math.sqrt((xSquared+ySquared+zSquared)));
-//				centerList.put(v, center);
+				sum = sum.devideValueByVector(1);
 				centerList.put(v, sum);
 			}
 			for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
-//				Vector3 newPostion = new Vector3()entry.getKey().getPosition()*a+(1-a)*entry.getValue();
-//				entry.getKey().setPosition(newPosition);
-				Vector3 ap = entry.getKey().getPosition().multiply(a);
-				Vector3 ac = entry.getValue().multiply(1-a);
+				Vector3 ap = entry.getKey().getPosition().multiply(alpha);
+				Vector3 ac = entry.getValue().multiply(1-alpha);
 				Vector3 newPosition = new Vector3(ap).add(ac);
-				entry.getKey().setPosition(newPosition);
+				entry.setValue(newPosition);
 			}
+		  vertexList = new ArrayList<>();
 			for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
-				vertexList = new ArrayList();
-				vertexList.add(entry.getKey());
+				Vertex vertex = new Vertex(entry.getValue());
+				vertex.setHalfEgde(entry.getKey().getHalfEdge());
+				vertex.setColor(entry.getKey().getColor());
+				vertexList.add(vertex);
 			}
 			triangulatedMesh.computeTriangleNormals();
 			triangulatedMesh.computeVertexNormals();
 		}
-	  
-	  public void generateDisplaylist(GL2 gl) {
+
+	private  ArrayList<Vertex> GetNeighboursVertexes(Vertex vertex) {
+		ArrayList<Vertex> neighboursVertexes = new ArrayList();
+
+		HalfEdge startEdge = vertex.getHalfEdge();
+
+		HalfEdge currentEdge = startEdge;
+
+		do {
+			neighboursVertexes.add(currentEdge.getOppositeHalfEdge().getStartVertex());
+			currentEdge = currentEdge.getOppositeHalfEdge().getNextHalfEdge();
+		}
+		while(currentEdge != startEdge);
+
+		return neighboursVertexes;
+	}
+
+	public void generateDisplaylist(GL2 gl) {
 			displayList = gl.glGenLists(1);
 			gl.glNewList(displayList, GL2.GL_COMPILE); // TODO Possible bug GL2? or
 														// GL

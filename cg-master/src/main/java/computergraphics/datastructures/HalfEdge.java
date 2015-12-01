@@ -46,7 +46,7 @@ public class HalfEdge {
         return getNextHalfEdge() != null;
     }
 
-    public HalfEdge getOpposite() {
+    public HalfEdge getOppositeHalfEdge() {
         return opposite;
     }
 
@@ -55,7 +55,7 @@ public class HalfEdge {
     }
 
     public boolean hasOppositeHalfEdge(){
-        return getOpposite() != null;
+        return getOppositeHalfEdge() != null;
     }
 
     public Vertex getStartVertex() {

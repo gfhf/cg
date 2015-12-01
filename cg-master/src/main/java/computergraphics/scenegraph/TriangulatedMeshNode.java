@@ -22,6 +22,8 @@ import java.util.List;
 public class TriangulatedMeshNode extends Node {
 	private HalfEdgeTriangleMesh mesh;
 	private int displayList = -1;
+	private boolean updated = false;
+
 
 	public TriangulatedMeshNode(HalfEdgeTriangleMesh mesh) {
 		this.mesh = mesh;
@@ -29,20 +31,16 @@ public class TriangulatedMeshNode extends Node {
 
 	@Override
 	public void drawGl(GL2 gl) {
-		
-		if (this.displayList == -1) {
+		if (this.displayList == -1 || updated) {
 			generateDisplaylist(gl);
+			updated = false;
 		}
-
-		
-
 		gl.glCallList(displayList);
 	}
 
 	public void generateDisplaylist(GL2 gl) {
 		displayList = gl.glGenLists(1);
-		gl.glNewList(displayList, GL2.GL_COMPILE); // TODO Possible bug GL2? or
-													// GL
+		gl.glNewList(displayList, GL2.GL_COMPILE);
 		gl.glBegin(GL2.GL_TRIANGLES);
 
 		for (int faceIndex = 0; faceIndex < mesh.getNumberOfTriangles(); faceIndex++) {
@@ -80,4 +78,8 @@ public class TriangulatedMeshNode extends Node {
 
 	}
 
+	public void laplace(){
+		mesh.laplace();
+		updated = true;
+	}
 }

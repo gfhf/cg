@@ -18,14 +18,15 @@ import computergraphics.math.Vector3;
  */
 public class Vertex {
 
+  public void setPosition(Vector3 position) {
+    this.position = position;
+  }
+
   /**
    * 3D position of the vertex.
    */
   private Vector3 position = new Vector3(0, 0, 0);
-  
-  public void setPosition(Vector3 newPosition){
-	  position = newPosition;
-  }
+
 
   /**
    * (Normalized) normal direction of the vertex.

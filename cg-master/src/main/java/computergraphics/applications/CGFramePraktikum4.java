@@ -7,25 +7,25 @@
 
 package computergraphics.applications;
 
-import computergraphics.datastructures.HalfEdgeTriangleMesh;
-import computergraphics.datastructures.ObjIO;
-import computergraphics.datastructures.Vertex;
+import computergraphics.datastructures.*;
 import computergraphics.framework.AbstractCGFrame;
 import computergraphics.math.Vector3;
-import computergraphics.scenegraph.*;
+import computergraphics.scenegraph.ColorNode;
+import computergraphics.scenegraph.Node;
+import computergraphics.scenegraph.ShaderNode;
 import computergraphics.scenegraph.ShaderNode.ShaderType;
+import computergraphics.scenegraph.TriangulatedMeshNode;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Application for the first exercise.
  *
  * @author Philipp Jenke
  */
-public class CGFramePraktikum2 extends AbstractCGFrame {
+public class CGFramePraktikum4 extends AbstractCGFrame {
 
     /**
      *
@@ -36,14 +36,16 @@ public class CGFramePraktikum2 extends AbstractCGFrame {
      * Mapping an identifier to a Node.
      */
     private Map<String, Node> nodeRegistry = new HashMap<>();
+    private HalfEdgeTriangleMesh mesh;
 
     /**
      * Constructor.
      */
-    public CGFramePraktikum2(int timerInverval) {
+    public CGFramePraktikum4(int timerInverval) {
         super(timerInverval);
 
         setupSceneGraph();
+
     }
 
     /**
@@ -51,45 +53,23 @@ public class CGFramePraktikum2 extends AbstractCGFrame {
      */
     private void setupSceneGraph() {
     	ObjIO io = new ObjIO();
-    	HalfEdgeTriangleMesh mesh = new HalfEdgeTriangleMesh();
-        try {
-            io.einlesen(".\\obj\\cow.obj", mesh);
-        } catch (IOException e) {
-            return;
-        }
+
+        IImpliciteFunction sphere = new ImpliciteSphere(1);
+
+        MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, sphere);
+    	mesh = mq.makeItSo();
         mesh.computeTriangleNormals();
         mesh.computeVertexNormals();
+        mesh.calculateCurveColor();
+
     	// TRIANGLE
         // Shader node does the lighting computation
-        ShaderNode shaderNodeTriangle = new ShaderNode(ShaderType.PHONG);
-        getRoot().addChild(shaderNodeTriangle);
-        shaderNodeTriangle.setParent(getRoot());
-
-        ColorNode colorNodeTriangle = new ColorNode(new Vector3(0.0, 1.0, 0.0));
-        shaderNodeTriangle.addChild(colorNodeTriangle);
-        colorNodeTriangle.setParent(shaderNodeTriangle);
-        nodeRegistry.put("colorNodeTriangle", colorNodeTriangle);
-
-        
-//        mesh.addVertex(new Vertex(new Vector3(-0.5f, -0.5f, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(0.5f, -0.5f, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(0, 0.5f, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(2, 2, 2f)));
-//        mesh.addVertex(new Vertex(new Vector3(2f, 0, 0)));
-//        mesh.addVertex(new Vertex(new Vector3(0, 2f, 4f)));
-//
-//
-//        mesh.addTriangle(0, 1, 2);
-//        mesh.addTriangle(2, 3, 4);
-//        mesh.addTriangle(0, 2, 4);
-
-        
-        
-        
-        
+        ShaderNode shaderNode = new ShaderNode(ShaderType.PHONG);
+        ColorNode colorNode = new ColorNode(new Vector3(0.0, 1.0, 0.0));
+        getRoot().addChild(shaderNode);
+        shaderNode.addChild(colorNode);
         TriangulatedMeshNode triMeshNode = new TriangulatedMeshNode(mesh);
-        colorNodeTriangle.addChild(triMeshNode);
-        triMeshNode.setParent(colorNodeTriangle);
+        colorNode.addChild(triMeshNode);
     }
 
     /*
@@ -118,19 +98,26 @@ public class CGFramePraktikum2 extends AbstractCGFrame {
      */
     public void keyPressed(int keyCode) {
 
-        long currentTime = System.currentTimeMillis();
+		long currentTime = System.currentTimeMillis();
 
-        if (MS_BEFORE_PROCESSING_NEXT_KEY < currentTime - lastKeyStroke) {
-            lastKeyStroke = currentTime;
+		if (MS_BEFORE_PROCESSING_NEXT_KEY < currentTime - lastKeyStroke) {
+			lastKeyStroke = currentTime;
 
-        } // if processing next key stroke
-    }
+			 System.out.println("Key pressed: " + (char) keyCode);
+			if (keyCode == (int) 'S') {
+				// System.out.println("Pressed key: " + keyCode);
+                ((TriangulatedMeshNode) getRoot().getChildNode(0).getChildNode(0).getChildNode(0)).laplace();
+			}
+
+			
+		} // if processing next key stroke
+	}
 
     /**
      * Program entry point.
      */
     public static void main(String[] args) {
         // The timer ticks every 1000 ms.
-        new CGFramePraktikum2(1000);
+        new CGFramePraktikum4(1000);
     }
 }

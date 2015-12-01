@@ -11,6 +11,7 @@
 
 package computergraphics.datastructures;
 
+import computergraphics.math.MathHelpers;
 import computergraphics.math.Vector3;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -339,108 +340,125 @@ public void computeVertexNormals(){
 	
 }
 
-public void laplace(){
-	double a = 0.5;
-	
-	HashMap<Vertex, Vector3> centerList = new HashMap();
-	for(Vertex v : vertexList){
-		ArrayList<Vertex> neighbours = new ArrayList();
+	public void laplace(){
+		double alpha = 0.3;
+
+		HashMap<Vertex, Vector3> centerList = new HashMap();
+
+		for(Vertex vertex : vertexList){
+			centerList.put(vertex, calculateBarycenter(vertex));
+		}
+
+		// calculate new vertex positions
+		for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
+			Vector3 originalVertexPosition = entry.getKey().getPosition();
+			Vector3 ap = originalVertexPosition.multiply(alpha);
+
+			Vector3 barycentricPosition = entry.getValue();
+			Vector3 ac = barycentricPosition.multiply(1 - alpha);
+			Vector3 newPosition = ap.add(ac);
+			entry.setValue(newPosition);
+		}
+
+		// set new vertex positions
+		for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
+			entry.getKey().setPosition(entry.getValue());
+		}
+
+		computeTriangleNormals();
+		computeVertexNormals();
+	}
+
+	private Vector3 calculateBarycenter(Vertex vertex) {
+		ArrayList<Vertex> neighboursVertexes;
 		Vector3 sum = new Vector3(0,0,0);
-		for(HalfEdge e  : halfEdgeList){
-			Vertex startVertex = e.getStartVertex();
-			Vertex endVertex = e.getNextHalfEdge().getStartVertex();
-			if(startVertex.equals(v) && !neighbours.contains(endVertex)){
-				neighbours.add(endVertex);
-			}
-			if(endVertex.equals(v) && !neighbours.contains(startVertex)){
-				neighbours.add(startVertex);
-			}
+
+		neighboursVertexes = getNeighboursVertexes(vertex);
+		for(Vertex neighbour : neighboursVertexes){
+            sum = sum.add(neighbour.getPosition());
+        }
+		//sum = sum.devideValueByVector(1);
+		sum =  sum.multiply(1.0/neighboursVertexes.size());
+		return sum;
+	}
+
+	private  ArrayList<Vertex> getNeighboursVertexes(Vertex vertex) {
+		ArrayList<Vertex> neighboursVertexes = new ArrayList();
+		HalfEdge startEdge = vertex.getHalfEdge();
+		HalfEdge currentEdge = startEdge;
+		do {
+			neighboursVertexes.add(currentEdge.getOppositeHalfEdge().getStartVertex());
+			currentEdge = currentEdge.getOppositeHalfEdge().getNextHalfEdge();
 		}
-		for(Vertex neighbour : neighbours){
-			sum = sum.add(neighbour.getPosition());
-		}
-//		double xSquared = sum.getX()*sum.getX();
-//		double ySquared = sum.getY()*sum.getY();
-//		double zSquared = sum.getZ()*sum.getZ();
-//		double center = 1 / (Math.sqrt((xSquared+ySquared+zSquared)));
-//		centerList.put(v, center);
-		centerList.put(v, sum);
+		while(currentEdge != startEdge);
+		return neighboursVertexes;
 	}
-	for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
-//		Vector3 newPostion = new Vector3()entry.getKey().getPosition()*a+(1-a)*entry.getValue();
-//		entry.getKey().setPosition(newPosition);
-		Vector3 ap = entry.getKey().getPosition().multiply(a);
-		Vector3 ac = entry.getValue().multiply(1-a);
-		Vector3 newPosition = new Vector3(ap.add(ac));
-		entry.getKey().setPosition(newPosition);
-	}
-	for(Map.Entry<Vertex, Vector3> entry : centerList.entrySet()){
-		vertexList = new ArrayList();
-		vertexList.add(entry.getKey());
-	}
-	computeTriangleNormals();
-	computeVertexNormals();
-}
 
 public void calculateCurveColor(){
-	HashMap<Vertex, Double> kList = new HashMap();
+	HashMap<Vertex, Double> curveValues = new HashMap();
 	double kmin = Integer.MAX_VALUE;
 	double kmax = Integer.MIN_VALUE;
-	
-	for(Vertex v : vertexList){
-		ArrayList<Vertex> neighbours = new ArrayList();
-		Vector3 sum = new Vector3(0,0,0);
-		for(HalfEdge e  : halfEdgeList){
-			Vertex startVertex = e.getStartVertex();
-			Vertex endVertex = e.getNextHalfEdge().getStartVertex();
-			if(startVertex.equals(v) && !neighbours.contains(endVertex)){
-				neighbours.add(endVertex);
-			}
-			if(endVertex.equals(v) && !neighbours.contains(startVertex)){
-				neighbours.add(startVertex);
-			}
-		}
-		for(Vertex neighbour : neighbours){
-			sum = sum.add(neighbour.getPosition());
-		}
-		double piXpj = v.getPosition().multiply(sum);
-		double xSquared = sum.getX()*sum.getX();
-		double ySquared = sum.getY()*sum.getY();
-		double zSquared = sum.getZ()*sum.getZ();
-		double piXpj2 = (Math.sqrt((xSquared+ySquared+zSquared)));
-		double arccos = Math.acos(piXpj/piXpj2);
 
-		HalfEdge startEdge = v.getHalfEdge();
-		HalfEdge currentEdge = startEdge;
-		
-		List<TriangleFacet> facetsOfV = new ArrayList();
-		do{
-			facetsOfV.add(currentEdge.getFacet());
-			currentEdge = currentEdge.getOpposite().getNextHalfEdge();
-		}while(startEdge != currentEdge);
-		
-		double A = 0;
-		for(TriangleFacet triangle : facetsOfV){
-			A += triangle.getArea();
+	for(Vertex vertexPi : vertexList){
+		//ArrayList<Vertex> neighbours = getNeighboursVertexes(vertexPi);
+		List<TriangleFacet> facetsOfPi = getAdjacentTriangleFacets(vertexPi);
+		double sum = 0.0;
+
+		for(TriangleFacet triangleFacetPj: facetsOfPi){
+			double piXpj = vertexPi.getNormal().multiply(triangleFacetPj.getNormal());
+			double lenghtPi = 1;//vertexPi.getNormal().getLenght();
+			double lenghtPj = 1; // vertexPj.getNormal().getLenght();
+			double lenghtPiXlenghtPj = lenghtPi * lenghtPj;
+
+			double div = piXpj / lenghtPiXlenghtPj;
+
+			sum += Math.acos(div);
 		}
+		double gamma =  1.0 / facetsOfPi.size() * sum;
+
+
 		
-		double kruemmung = arccos/A;
-		kList.put(v, kruemmung);
-		if(kruemmung < kmin){
-			kmin = kruemmung;
+		double sumArea = 0.0;
+		for(TriangleFacet triangle : facetsOfPi){
+			sumArea += triangle.getArea();
 		}
-		if(kruemmung > kmax){
-			kmax = kruemmung;
+
+		// krümmung
+		double curvature = gamma/sumArea;
+
+		curveValues.put(vertexPi, curvature);
+
+		if(curvature < kmin){
+			kmin = curvature;
+		}
+		if(curvature > kmax){
+			kmax = curvature;
 		}
 	}
-	for(Map.Entry<Vertex, Double> entry : kList.entrySet()){
-		double f = ((entry.getValue()-kmin) / (kmax-kmin));
-		Vector3 ColorVector = new Vector3(0,1,0).multiply(f);
-		entry.getKey().setColor(ColorVector);
+
+	for(Map.Entry<Vertex, Double> entry : curveValues.entrySet()){
+		double curvature = entry.getValue();
+		double f = ((curvature-kmin) / (kmax-kmin));
+
+		Vector3 colorVector = new Vector3(0,1,0).multiply(f);
+		Vertex vertex = entry.getKey();
+		vertex.setColor(colorVector);
 	}
 }
 
-public List<HalfEdge> getHalfEdgeList(){
+	private List<TriangleFacet> getAdjacentTriangleFacets(Vertex vertexPi) {
+		HalfEdge startEdge = vertexPi.getHalfEdge();
+		HalfEdge currentEdge = startEdge;
+
+		List<TriangleFacet> facetsOfPi = new ArrayList();
+		do{
+			facetsOfPi.add(currentEdge.getFacet());
+			currentEdge = currentEdge.getOppositeHalfEdge().getNextHalfEdge();
+		}while(startEdge != currentEdge);
+		return facetsOfPi;
+	}
+
+	public List<HalfEdge> getHalfEdgeList(){
 	return halfEdgeList;
 }
 

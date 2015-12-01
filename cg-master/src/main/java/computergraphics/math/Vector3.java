@@ -89,6 +89,17 @@ public class Vector3 {
     }
 
     /**
+     * Scale vector.
+     */
+    public Vector3 devideValueByVector(final double s) {
+        Vector3 result = new Vector3();
+        for (int i = 0; i < MathHelpers.DIMENSION_3; i++) {
+            result.set(i, s / values[i]);
+        }
+        return result;
+    }
+
+    /**
      * Get the squared norm.
      */
     public double getSqrNorm() {
@@ -235,5 +246,15 @@ public class Vector3 {
     public String toString() {
         return String.format("(%f, %f, %f)", values[0],
                 values[1], values[2]);
+    }
+
+    public double getLenght() {
+        double xSquared = Math.pow(getX(), 2) ;
+        double ySquared = Math.pow(getY(), 2);
+        double zSquared =       Math.pow(getZ(), 2);
+
+        double sum = xSquared+ySquared +zSquared;
+
+        return Math.sqrt(sum);
     }
 }

@@ -1,8 +1,0 @@
-/**
- * WP Computer Graphik WS 15/16
- * Praktikumgruppe Nummer ${todo}
- * stephan.berngruber@haw-hamburg.de
- * rene.goetsch@haw-hamburg.de
- * Aufgabenblatt Nr. ${todo}
- * Verwendete Quellen: keine
- */

@@ -55,9 +55,13 @@ public class CGFramePraktikum4 extends AbstractCGFrame {
     	ObjIO io = new ObjIO();
 
         IImpliciteFunction sphere = new ImpliciteSphere(1);
-
-        MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, sphere);
-    	mesh = mq.makeItSo();
+        IImpliciteFunction torus = new ImpliciteTorus(1,0.5);
+        IImpliciteFunction plane = new ImplicitePlane();
+        
+       MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, sphere);
+        //MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, torus);
+        //MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, plane);
+        mesh = mq.makeItSo();
         mesh.computeTriangleNormals();
         mesh.computeVertexNormals();
         mesh.calculateCurveColor();

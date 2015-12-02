@@ -453,7 +453,12 @@ public void calculateCurveColor(){
 		List<TriangleFacet> facetsOfPi = new ArrayList();
 		do{
 			facetsOfPi.add(currentEdge.getFacet());
-			currentEdge = currentEdge.getOppositeHalfEdge().getNextHalfEdge();
+			if (currentEdge.hasOppositeHalfEdge()){
+				currentEdge = currentEdge.getOppositeHalfEdge().getNextHalfEdge();
+			}else{
+				currentEdge = startEdge;
+			}
+			
 		}while(startEdge != currentEdge);
 		return facetsOfPi;
 	}

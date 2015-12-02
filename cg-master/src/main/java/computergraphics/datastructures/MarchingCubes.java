@@ -38,11 +38,13 @@ public class MarchingCubes {
 
     public HalfEdgeTriangleMesh makeItSo() {
         double currentX = minPosition.getX();
-        double currentY = minPosition.getY();
-        double currentZ = minPosition.getZ();
+        
+        
 
         while (currentX < maxPosition.getX()) {
+        	double currentY = minPosition.getY();
             while (currentY < maxPosition.getY()) {
+            	double currentZ = minPosition.getZ();
                 while (currentZ < maxPosition.getZ()) {
 
                     List<Vector3> marchingCubePoints = new ArrayList<>();
@@ -116,12 +118,12 @@ public class MarchingCubes {
             }
         }
 
-        // approximate and add to the mash
+        // approximate and add to the mesh
         int i = 0;
         for (int edge : edges) {
             int[] vetexIds = vertexLookUp.get(edge);
 
-            Vector3 vertextPosition = approximate(marchingCubePoints.get(vetexIds[0]), marchingCubePoints.get(vetexIds[1]));
+            Vector3 vertextPosition = approximate(marchingCubePoints.get(vetexIds[0]-1), marchingCubePoints.get(vetexIds[1]-1));
             int lastVertexIndex = mesh.addVertex(new Vertex(vertextPosition));
 
             i++;
@@ -135,6 +137,15 @@ public class MarchingCubes {
 
     private Vector3 approximate(Vector3 vector0Position, Vector3 vector1Position) {
         return vector0Position.add(vector1Position).multiply(0.5);
+    }
+    
+    private Vector3 interpolate(Vector3 vector0Position, Vector3 vector1Position){
+    	double valueVector0 = function.calculate(vector0Position);
+    	double valueVector1 = function.calculate(vector1Position);
+    	
+    	double t = (isoValue - valueVector0 / (valueVector0 - valueVector0));
+    	Vector3 p = vector0Position.multiply(1-t).add(vector1Position.multiply(t));
+    	return p;
     }
 
     private final Map<Integer, int[]> vertexLookUp;
@@ -159,7 +170,7 @@ public class MarchingCubes {
         vertexLookUp.put(11, new int[]{3, 7});
     }
 
-    private static int faces[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    private static int faces[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, 0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1,
             8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2, 11, -1,
@@ -358,7 +369,7 @@ public class MarchingCubes {
             -1, -1, -1, -1, 1, 3, 8, 9, 1, 8, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, 0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3,
             8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
     public HalfEdgeTriangleMesh getMesh() {
         return mesh;

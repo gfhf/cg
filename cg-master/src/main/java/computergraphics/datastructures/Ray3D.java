@@ -13,38 +13,38 @@ public class Ray3D {
   /**
    * Starting point.
    */
-  private Vector3 p = new Vector3();
+  private Vector3 point = new Vector3();
 
   /**
    * Direction
    */
-  private Vector3 r = new Vector3();
+  private Vector3 direction = new Vector3();
 
   /**
    * Constructor.
    */
-  public Ray3D(Vector3 p, Vector3 r) {
-    this.p.copy(p);
-    this.r.copy(r);
+  public Ray3D(Vector3 point, Vector3 direction) {
+    this.point.copy(point);
+    this.direction.copy(direction);
   }
 
   @Override
   public String toString() {
-    return p + " + lambda * " + r;
+    return point + " + lambda * " + direction;
   }
 
   /**
    * Getter.
    */
   public Vector3 getDirection() {
-    return r;
+    return direction;
   }
 
   /**
    * Getter.
    */
   public Vector3 getPoint() {
-    return p;
+    return point;
   }
 
 }

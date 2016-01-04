@@ -46,10 +46,10 @@ public class TriangulatedMeshNode extends Node {
 		for (int faceIndex = 0; faceIndex < mesh.getNumberOfTriangles(); faceIndex++) {
 			TriangleFacet f1 = mesh.getFacet(faceIndex);
 			Vector3 normalFace = f1.getNormal();
-			Vector3 color = f1.getHalfEdge().getStartVertex().getColor();
+//			Vector3 color = f1.getHalfEdge().getStartVertex().getColor();
 
 			gl.glNormal3d(normalFace.get(0), normalFace.get(1), normalFace.get(2));
-			gl.glColor3d(color.get(0), color.get(1), color.get(2));
+//			gl.glColor3d(color.get(0), color.get(1), color.get(2));
 
 			
 			Vertex vx1 = f1.getHalfEdge().getStartVertex();

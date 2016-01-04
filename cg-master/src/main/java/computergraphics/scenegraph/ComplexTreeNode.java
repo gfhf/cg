@@ -53,7 +53,8 @@ public class ComplexTreeNode extends Node {
 		
 		double radius = 0.13;
 		int resolution = 5;
-		crown = new SphereNode(radius, resolution);
+		crown = new SphereNode(radius, resolution, new Vector3(1,1,0));
+//		crown = new SphereNode(radius, resolution);
 		translatioNodeCrown.addChild(crown);
 	}
 

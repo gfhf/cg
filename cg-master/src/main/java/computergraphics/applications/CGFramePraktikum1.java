@@ -68,7 +68,7 @@ public class CGFramePraktikum1 extends AbstractCGFrame {
 		translationNode.setParent(colorNodeTriangle);
 		nodeRegistry.put("translationNodeTriangle", translationNode);
 
-		ScaleNode scaleNodeTriangle = new ScaleNode(new Vector3(1, 1, 1));
+		ScaleNode scaleNodeTriangle = new ScaleNode(new Vector3(1,0,0));
 		translationNode.addChild(scaleNodeTriangle);
 		scaleNodeTriangle.setParent(translationNode);
 		nodeRegistry.put("scaleNodeTriangle", scaleNodeTriangle);
@@ -85,7 +85,8 @@ public class CGFramePraktikum1 extends AbstractCGFrame {
 		ColorNode colorNodeSphere = new ColorNode(0.75, 0.25, 0.25);
 		shaderNodeSphere.addChild(colorNodeSphere);
 
-		SphereNode sphereNode = new SphereNode(0.25, 20);
+		SphereNode sphereNode = new SphereNode(0.25, 20, new Vector3(1,0,0));
+//		SphereNode sphereNode = new SphereNode(0.1, 20);
 		colorNodeSphere.addChild(sphereNode);
 	}
 

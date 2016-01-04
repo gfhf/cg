@@ -16,7 +16,6 @@ import computergraphics.scenegraph.ShaderNode;
 import computergraphics.scenegraph.ShaderNode.ShaderType;
 import computergraphics.scenegraph.TriangulatedMeshNode;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,24 +51,24 @@ public class CGFramePraktikum4 extends AbstractCGFrame {
      * Sets up the scene graph.
      */
     private void setupSceneGraph() {
-    	ObjIO io = new ObjIO();
+        ObjIO io = new ObjIO();
 
         IImpliciteFunction sphere = new ImpliciteSphere(1);
-        IImpliciteFunction torus = new ImpliciteTorus(1,0.5);
+        IImpliciteFunction torus = new ImpliciteTorus(1, 0.5);
         IImpliciteFunction plane = new ImplicitePlane();
-        
-       MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, sphere);
-        //MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, torus);
-        //MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, plane);
-        mesh = mq.makeItSo();
+
+//        MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, sphere);
+//        MarchingCubes mq = new MarchingCubes(0.1, new Vector3(-1, -1, -1), new Vector3(1, 1, 1), 0, sphere);
+        MarchingCubes mq = new MarchingCubes(0.5, new Vector3(-2,-2,-2), new Vector3(2,2,2), 0, torus);
+//        MarchingCubes mq = new MarchingCubes(0.25, new Vector3(-2.5,-2.5,-2.5), new Vector3(2.5,2.5,2.5), 0, plane);
+        mesh = mq.createMarchingCubesAndCalculateTriangles();
         mesh.computeTriangleNormals();
         mesh.computeVertexNormals();
-        mesh.calculateCurveColor();
 
-    	// TRIANGLE
+        // TRIANGLE
         // Shader node does the lighting computation
         ShaderNode shaderNode = new ShaderNode(ShaderType.PHONG);
-        ColorNode colorNode = new ColorNode(new Vector3(0.0, 1.0, 0.0));
+        ColorNode colorNode = new ColorNode(0.75, 0.25, 0.25);
         getRoot().addChild(shaderNode);
         shaderNode.addChild(colorNode);
         TriangulatedMeshNode triMeshNode = new TriangulatedMeshNode(mesh);
@@ -102,20 +101,20 @@ public class CGFramePraktikum4 extends AbstractCGFrame {
      */
     public void keyPressed(int keyCode) {
 
-		long currentTime = System.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
 
-		if (MS_BEFORE_PROCESSING_NEXT_KEY < currentTime - lastKeyStroke) {
-			lastKeyStroke = currentTime;
+        if (MS_BEFORE_PROCESSING_NEXT_KEY < currentTime - lastKeyStroke) {
+            lastKeyStroke = currentTime;
 
-			 System.out.println("Key pressed: " + (char) keyCode);
-			if (keyCode == (int) 'S') {
-				// System.out.println("Pressed key: " + keyCode);
+            System.out.println("Key pressed: " + (char) keyCode);
+            if (keyCode == (int) 'S') {
+                // System.out.println("Pressed key: " + keyCode);
                 ((TriangulatedMeshNode) getRoot().getChildNode(0).getChildNode(0).getChildNode(0)).laplace();
-			}
+            }
 
-			
-		} // if processing next key stroke
-	}
+
+        } // if processing next key stroke
+    }
 
     /**
      * Program entry point.

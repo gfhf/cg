@@ -19,12 +19,6 @@ public class MarchingCubes {
     private final double isoValue;
     private IImpliciteFunction function;
 
-    /**
-     * @param resolution
-     * @param startValue Value that determins the value for each axis to start creating the marching cubes
-     * @param endValue   Value that determins the value for each axis to start creating the marching cubes
-     * @param isoValue
-     */
     public MarchingCubes(double resolution, Vector3 minPosition, Vector3 maxPosition, double isoValue, IImpliciteFunction function) {
         this.resolution = resolution;
         this.minPosition = minPosition;
@@ -36,10 +30,8 @@ public class MarchingCubes {
         initializeVertexLookUp();
     }
 
-    public HalfEdgeTriangleMesh makeItSo() {
+    public HalfEdgeTriangleMesh createMarchingCubesAndCalculateTriangles() {
         double currentX = minPosition.getX();
-        
-        
 
         while (currentX < maxPosition.getX()) {
         	double currentY = minPosition.getY();
@@ -50,37 +42,7 @@ public class MarchingCubes {
                     List<Vector3> marchingCubePoints = new ArrayList<>();
                     List<Double> marchingCubePointValues = new ArrayList<>();
 
-                    Vector3 vector = new Vector3(currentX, currentY, currentZ);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX + resolution, currentY, currentZ);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX, currentY + resolution, currentZ);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX + resolution, currentY + resolution, currentZ);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX, currentY, currentZ + resolution);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX + resolution, currentY, currentZ + resolution);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX, currentY + resolution, currentZ + resolution);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
-
-                    vector = new Vector3(currentX + resolution, currentY + resolution, currentZ + resolution);
-                    marchingCubePoints.add(vector);
-                    marchingCubePointValues.add(function.calculate(vector));
+                    createOneMarchingCube(currentX, currentY, currentZ, marchingCubePoints, marchingCubePointValues);
 
                     createTriangles(marchingCubePoints, marchingCubePointValues);
 
@@ -90,10 +52,42 @@ public class MarchingCubes {
             }
             currentX += resolution;
         }
-
         return mesh;
     }
 
+    private void createOneMarchingCube(double currentX, double currentY, double currentZ, List<Vector3> marchingCubePoints, List<Double> marchingCubePointValues) {
+        Vector3 vector = new Vector3(currentX, currentY, currentZ);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX + resolution, currentY, currentZ);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX + resolution, currentY + resolution, currentZ);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX, currentY + resolution, currentZ);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX, currentY, currentZ + resolution);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX + resolution, currentY, currentZ + resolution);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX + resolution, currentY + resolution, currentZ + resolution);
+        marchingCubePoints.add(vector);
+
+        vector = new Vector3(currentX, currentY + resolution, currentZ + resolution);
+        marchingCubePoints.add(vector);
+
+        for (Vector3 vertex : marchingCubePoints){
+            marchingCubePointValues.add(function.calculate(vertex));
+        }
+    }
+
+    /**
+     * Creates all triangles for one marching cube.
+     */
     private void createTriangles(List<Vector3> marchingCubePoints, List<Double> cubePointValues) {
 
         int caseIndex = 0;
@@ -106,25 +100,29 @@ public class MarchingCubes {
             }
         }
 
-        int numberOfEntriesPerCases = 15;
+        int numberOfCases = 15;
 
         // get edges on that desired triangles have their vertexes
-        int indexFirstElem = caseIndex * numberOfEntriesPerCases;
-        List<Integer> edges = new ArrayList<>();
-        for (int i = 0; i < numberOfEntriesPerCases; i++) {
-            int elem = faces[indexFirstElem + i];
+        int indexFirstElemOfFacesRow = caseIndex * numberOfCases;
+
+        // edges of the marching cube where a vertex of a facet is lying on
+        List<Integer> edgeIdsWithTransition = new ArrayList<>();
+
+        for (int i = 0; i < numberOfCases; i++) {
+            int elem = faces[indexFirstElemOfFacesRow + i];
             if (elem != -1) {
-                edges.add(elem);
+                edgeIdsWithTransition.add(elem);
             }
         }
 
         // approximate and add to the mesh
         int i = 0;
-        for (int edge : edges) {
-            int[] vetexIds = vertexLookUp.get(edge);
+        for (int edgeId : edgeIdsWithTransition) {
+            int[] vetexIds = vertexLookUp.get(edgeId);
 
-            Vector3 vertextPosition = approximate(marchingCubePoints.get(vetexIds[0]-1), marchingCubePoints.get(vetexIds[1]-1));
-            int lastVertexIndex = mesh.addVertex(new Vertex(vertextPosition));
+            Vector3 newVertexPosition = interpolate(marchingCubePoints.get(vetexIds[0]), cubePointValues.get(vetexIds[0]), marchingCubePoints.get(vetexIds[1]),cubePointValues.get(vetexIds[1]));
+
+            int lastVertexIndex = mesh.addVertex(new Vertex(newVertexPosition));
 
             i++;
             // create a triangle for each 3 vertexes
@@ -138,14 +136,11 @@ public class MarchingCubes {
     private Vector3 approximate(Vector3 vector0Position, Vector3 vector1Position) {
         return vector0Position.add(vector1Position).multiply(0.5);
     }
-    
-    private Vector3 interpolate(Vector3 vector0Position, Vector3 vector1Position){
-    	double valueVector0 = function.calculate(vector0Position);
-    	double valueVector1 = function.calculate(vector1Position);
-    	
-    	double t = (isoValue - valueVector0 / (valueVector0 - valueVector0));
-    	Vector3 p = vector0Position.multiply(1-t).add(vector1Position.multiply(t));
-    	return p;
+
+    private Vector3 interpolate(Vector3 cubeVertex0Position, double impliciteValueVertex0, Vector3 cubeVertex1Position, double implicitValueVertex1){
+    	double t = (isoValue - impliciteValueVertex0) / (implicitValueVertex1 - impliciteValueVertex0);
+    	Vector3 interpolatedVertexPosition = cubeVertex0Position.multiply(1 - t).add(cubeVertex1Position.multiply(t));
+    	return interpolatedVertexPosition;
     }
 
     private final Map<Integer, int[]> vertexLookUp;
@@ -156,18 +151,18 @@ public class MarchingCubes {
      * to determine the cubes vertex ids that are lieing at the ends of a specific edge
      */
     private void initializeVertexLookUp() {
-        vertexLookUp.put(0, new int[]{1, 2});
-        vertexLookUp.put(1, new int[]{2, 3});
-        vertexLookUp.put(2, new int[]{3, 4});
-        vertexLookUp.put(3, new int[]{1, 4});
-        vertexLookUp.put(4, new int[]{5, 6});
-        vertexLookUp.put(5, new int[]{6, 7});
-        vertexLookUp.put(6, new int[]{7, 8});
-        vertexLookUp.put(7, new int[]{5, 8});
-        vertexLookUp.put(8, new int[]{5, 1});
-        vertexLookUp.put(9, new int[]{2, 6});
-        vertexLookUp.put(10, new int[]{4, 8});
-        vertexLookUp.put(11, new int[]{3, 7});
+        vertexLookUp.put(0, new int[]{0, 1});
+        vertexLookUp.put(1, new int[]{1, 2});
+        vertexLookUp.put(2, new int[]{2, 3});
+        vertexLookUp.put(3, new int[]{0, 3});
+        vertexLookUp.put(4, new int[]{4, 5});
+        vertexLookUp.put(5, new int[]{5, 6});
+        vertexLookUp.put(6, new int[]{6, 7});
+        vertexLookUp.put(7, new int[]{4, 7});
+        vertexLookUp.put(8, new int[]{4, 0});
+        vertexLookUp.put(9, new int[]{1, 5});
+        vertexLookUp.put(10, new int[]{3, 7});
+        vertexLookUp.put(11, new int[]{2, 6});
     }
 
     private static int faces[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

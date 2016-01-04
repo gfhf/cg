@@ -91,6 +91,17 @@ public class Vector3 {
     /**
      * Scale vector.
      */
+    public Vector3 devide(final double s) {
+        Vector3 result = new Vector3();
+        for (int i = 0; i < MathHelpers.DIMENSION_3; i++) {
+            result.set(i, values[i] / s);
+        }
+        return result;
+    }
+
+    /**
+     * Scale vector.
+     */
     public Vector3 devideValueByVector(final double s) {
         Vector3 result = new Vector3();
         for (int i = 0; i < MathHelpers.DIMENSION_3; i++) {
@@ -175,6 +186,17 @@ public class Vector3 {
         Vector3 result = new Vector3();
         for (int i = 0; i < MathHelpers.DIMENSION_3; i++) {
             result.set(i, get(i) + other.get(i));
+        }
+        return result;
+    }
+
+    /**
+     * Add another vector. Return the resulting vector.
+     */
+    public Vector3 substract(Vector3 other) {
+        Vector3 result = new Vector3();
+        for (int i = 0; i < MathHelpers.DIMENSION_3; i++) {
+            result.set(i, get(i) - other.get(i));
         }
         return result;
     }

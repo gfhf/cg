@@ -68,12 +68,12 @@ public class CGFramePraktikum3 extends AbstractCGFrame {
         }
         mesh.computeTriangleNormals();
         mesh.computeVertexNormals();
-        mesh.calculateCurveColor();
+//        mesh.calculateCurveColor();
 
     	// TRIANGLE
         // Shader node does the lighting computation
         ShaderNode shaderNode = new ShaderNode(ShaderType.PHONG);
-        ColorNode colorNode = new ColorNode(new Vector3(0.0, 1.0, 0.0));
+        ColorNode colorNode = new ColorNode(0.75, 0.25, 0.25);
         getRoot().addChild(shaderNode);
         shaderNode.addChild(colorNode);
         TriangulatedMeshNode triMeshNode = new TriangulatedMeshNode(mesh);
